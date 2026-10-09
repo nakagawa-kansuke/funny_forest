@@ -1,0 +1,1408 @@
+<html style="margin:0;padding:0;width:100%;height:100%;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>楽しい森</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box}html,body{margin:0;background:#000;color:#fff;font-family:'Noto Sans JP',sans-serif;overflow:hidden;width:100%;height:100%}
+@keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-5px,4px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,-4px)}}
+
+@keyframes fadeIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:100;background:#000;padding:20px}
+.hidden{display:none!important}
+#ui{z-index:150}
+.title{font-size:clamp(2rem,9vw,6rem);font-weight:900;letter-spacing:.4em;text-shadow:0 0 30px rgba(150,255,150,.1);font-family:'Shippori Mincho',serif}
+.btn{padding:10px 28px;border:2px solid #fff;background:transparent;color:#fff;font-size:1rem;cursor:pointer;font-weight:700;letter-spacing:.15em;margin:5px;border-radius:5px;transition:all .15s}
+.btn:hover{background:#fff;color:#000;transform:scale(1.05)}
+.btn.danger{border-color:#dc2626;color:#dc2626}.btn.danger:hover{background:#dc2626;color:#fff}
+.btn.active{background:#fff;color:#000}
+.vignette{pointer-events:none;position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.85) 100%);z-index:30}
+.item{width:44px;height:44px;border:2px solid #444;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.2rem;position:relative;transition:all .15s;cursor:pointer;user-select:none}
+.item:hover{transform:scale(1.12);border-color:#fff}
+.item.has{border-color:#fbbf24;box-shadow:0 0 14px rgba(251,191,36,.6)}
+.item.used{opacity:.35;filter:grayscale(1)}
+.item .n{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);font-size:11px;background:#000;color:#fff;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;transition:opacity .15s;border:2px solid #fbbf24;font-weight:700;pointer-events:none;z-index:100;min-width:130px;text-align:center}
+.item:hover .n{opacity:1}
+.item .k{position:absolute;right:-4px;top:-6px;background:#2563eb;color:#fff;font-size:10px;padding:1px 5px;border-radius:8px;font-weight:900;border:1px solid #fff}
+#msg{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.95);border:2px solid #666;padding:14px 26px;border-radius:8px;z-index:50;max-width:90%;text-align:center;opacity:0;transition:opacity .3s;font-family:'Shippori Mincho',serif;line-height:1.8;white-space:pre-line;font-size:1.05rem}
+#msg.show{opacity:1}
+.ui-box{background:rgba(0,0,0,.82);border:1px solid rgba(255,255,255,.25);padding:9px 12px;border-radius:7px;box-shadow:0 0 15px rgba(0,0,0,.85)}
+.stamina{width:200px;height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+.stamina>div{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width .1s}
+.stamina>div.low{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.stamina>div.cri{background:linear-gradient(90deg,#ef4444,#f87171)}
+#hideInd{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);border:3px solid #22c55e;color:#86efac;padding:16px 32px;border-radius:10px;z-index:45;font-weight:700;display:none;font-size:1.1rem;animation:fadeIn .3s ease}
+#hideInd.show{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;z-index:60;flex-direction:column;padding:20px}
+.modal.show{display:flex}
+.box{background:#0e0e13;border:2px solid #444;padding:24px 30px;border-radius:9px;max-width:680px;max-height:92vh;overflow-y:auto;box-shadow:0 0 40px rgba(0,0,0,.9);animation:fadeIn .3s ease}
+.story,.manual{line-height:2;font-family:'Shippori Mincho',serif;font-size:1.02rem}
+.story h2,.manual h2{text-align:center;font-size:1.7rem;margin-bottom:14px;letter-spacing:.2em}
+.story h2{color:#86efac}.manual h2{color:#93c5fd}
+.cmd{display:inline-block;background:#1e293b;color:#93c5fd;padding:2px 9px;border-radius:4px;font-weight:700;margin:0 2px;font-family:monospace;border:1px solid #3b82f6}
+.difflist{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0}
+.diff{border:2px solid #555;padding:12px;border-radius:7px;cursor:pointer;transition:all .15s;text-align:center;background:#111}
+.diff:hover{border-color:#fff;transform:scale(1.03)}
+.diff.active{border-color:#4ade80;background:#052e16;box-shadow:0 0 15px rgba(74,222,128,.3)}
+.diff .name{font-weight:900;font-size:1.15rem;letter-spacing:.2em;margin-bottom:4px}
+.diff .desc{font-size:.75rem;color:#aaa;line-height:1.5}
+#tip{position:absolute;background:rgba(0,0,0,.98);border:2px solid #86efac;color:#86efac;padding:6px 12px;border-radius:5px;font-size:.85rem;pointer-events:none;display:none;white-space:nowrap;z-index:70;font-weight:700}
+.map-canvas-wrap{width:800px;max-width:90vw;height:600px;max-height:70vh;background:#000;border:2px solid #555;border-radius:5px;position:relative;overflow:hidden}
+#bigMap{width:100%;height:100%;display:block}
+#mini{border:2px solid #555;border-radius:4px;cursor:pointer;background:#000}
+.chase{animation:pulse .4s infinite}
+</style>
+</head>
+<body>
+  <canvas id="cv" style="position:fixed;inset:0;z-index:10;display:block;width:100vw;height:100vh"></canvas>
+
+<div id="title" class="screen">
+  <div class="title">楽 し い 森</div>
+  <p class="text-gray-400 mt-6 max-w-md text-center" style="font-family:'Shippori Mincho',serif">なんだか賑やかな森。<br>忘れられた廃小屋に隠された鍵を集め、<br>この地から生きて脱出しよう。</p>
+  <div class="mt-8 text-center">
+    <div class="text-sm text-gray-400 mb-2 font-bold">難易度を選択</div>
+    <div class="difflist" style="grid-template-columns:repeat(5,1fr)">
+  <div class="diff" data-d="peace" onclick="selDiff('peace')">
+    <div class="name text-green-400">静 寂</div>
+    <div class="desc">鍵5個・敵1種<br>簡単</div>
+  </div>
+  <div class="diff" data-d="warn" onclick="selDiff('warn')">
+    <div class="name text-yellow-300">平 穏</div>
+    <div class="desc">鍵7個・敵2種<br>普通</div>
+  </div>
+  <div class="diff" data-d="crisis" onclick="selDiff('crisis')">
+    <div class="name text-orange-400">異 変</div>
+    <div class="desc">鍵10個・敵3種<br>難しい</div>
+  </div>
+  <div class="diff" data-d="fear" onclick="selDiff('fear')">
+    <div class="name text-red-500">恐 怖</div>
+    <div class="desc">鍵10個・敵4種<br>厳しい</div>
+  </div>
+  <div class="diff" data-d="ruler" onclick="selDiff('ruler')">
+    <div class="name text-purple-400">悪 夢</div>
+    <div class="desc">鍵10個・敵5種<br>無理</div>
+  </div>
+</div>
+  </div>
+  <div class="flex gap-2 justify-center mt-6">
+    <button class="btn" onclick="startGame()">森へ入る</button>
+    <button class="btn" onclick="show('s1')">操作方法</button>
+    <button class="btn" onclick="openBook('enemy')">森の住人</button>
+<button class="btn" onclick="openBook('item')">アイテム一覧</button>
+  </div>
+  <p class="text-xs text-gray-600 mt-6">※ 音が出ます。イヤホン推奨</p>
+</div>
+
+<div id="s1" class="screen hidden">
+  <div class="box manual">
+    <h2>操 作 方 法</h2>
+    <div class="space-y-2 text-base">
+      <p>① <span class="cmd">↑ ↓ ← →</span> または <span class="cmd">W A S D</span>：移動します</p>
+      <p>② <span class="cmd">Shift</span> を押しながら移動：ダッシュします。スタミナを消費します</p>
+      <p>③ <span class="cmd">Space</span>：調べる、<span class="text-yellow-300 font-bold">ドアを開ける</span>、茂みに隠れる、といった行動をします</p>
+      <p>④ <span class="cmd">1 〜 4</span> キー または 右上の<span class="cmd">アイテム欄をクリック</span>：アイテムを使用します</p>
+      <p>⑤ 右下の<span class="cmd">ミニマップ</span>をクリック：森全体の地図を表示します</p>
+    </div>
+    <div class="border-t border-gray-600 mt-5 pt-3 text-sm bg-gray-900/80 p-4 rounded-lg border border-gray-700 space-y-2">
+      <p>🎯 <span class="font-bold">目的</span>：森の中の廃小屋やあちこちに隠された<span class="text-yellow-300 font-bold">鍵</span>をすべて集めてください。</p>
+      <p>🚪 ドアは最初閉まっています。<span class="cmd">Space</span> で「開ける」必要があります。</p>
+      <p>👻 森の住人はあなたと遊びたがっているようです。</p>
+      <p>🌿 大きな茂みの近くで <span class="cmd">Space</span>：茂みに隠れられます。</p>
+      <p>📦 アイテムはそれぞれ明確な効果があります。状況に応じて使いましょう。</p>
+    </div>
+    <div class="text-center mt-6">
+      <button class="btn" onclick="show('title')">◀ タイトルへ</button>
+    </div>
+  </div>
+</div>
+
+<div id="book" class="screen hidden">
+  <div class="box manual" style="max-width:760px">
+    <h2 id="bookTitle">森 の 住 人</h2>
+    <div id="bookBody" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3"></div>
+    <div class="text-center mt-6">
+      <button class="btn" onclick="show('title')">◀ タイトルへ</button>
+    </div>
+  </div>
+</div>
+
+<div id="over" class="screen hidden">
+  <div class="text-center">
+    <div class="text-6xl font-black text-red-500 mb-3" style="text-shadow:0 0 30px rgba(220,38,38,.8)">捕まった……</div>
+    <p class="text-gray-300 mb-2" style="font-family:'Shippori Mincho',serif">森の住人に、ついに捕まってしまった。</p>
+    <p id="overInfo" class="text-gray-400 mb-7"></p>
+    <div class="flex gap-2 justify-center">
+      <button class="btn" onclick="startGame()">もう一度挑戦</button>
+      <button class="btn" onclick="show('title')">タイトルへ戻る</button>
+    </div>
+  </div>
+</div>
+
+<div id="clear" class="screen hidden">
+  <div class="text-center">
+    <div class="text-5xl font-black text-green-400 mb-3" style="text-shadow:0 0 30px rgba(34,197,94,.6)">生きて脱出した！</div>
+    <p class="text-gray-200 mb-2" style="font-family:'Shippori Mincho',serif">鍵をすべて集め、ゲートを開けてこの森から逃れることができた。</p>
+    <p id="clearInfo" class="text-gray-400 mb-7"></p>
+    <div class="flex gap-2 justify-center">
+      <button class="btn" onclick="startGame()">もう一度プレイ</button>
+      <button class="btn" onclick="show('title')">タイトルへ戻る</button>
+    </div>
+  </div>
+</div>
+
+<div id="mapModal" class="modal">
+  <h3 class="text-lg font-bold mb-2 text-center">森 の 全 図</h3>
+  <div class="map-canvas-wrap">
+    <canvas id="bigMap" width="800" height="600"></canvas>
+    <div id="tip"></div>
+  </div>
+  <p class="text-gray-400 text-xs text-center mt-2">緑色:木 / 茶色:小屋 / 黄色:ドア / 水色:調査可能 / 青色:あなた / 赤色:敵</p>
+  <div class="text-center mt-3"><button class="btn" onclick="closeMap()">閉じる</button></div>
+</div>
+
+<div id="ui" class="hidden">
+  <div class="vignette"></div>
+  <div id="msg"></div>
+  <div id="hideInd">🌿 茂みに隠れている……</div>
+  <div class="fixed top-3 left-3 z-40 space-y-1 ui-box">
+    <div id="area" class="text-base font-bold text-green-300" style="font-family:'Shippori Mincho',serif">森の入口</div>
+    <div class="stamina"><div id="stBar" style="width:100%"></div></div>
+    <div class="stamina mt-1" style="height:5px"><div id="smBar" style="width:100%;background:linear-gradient(90deg,#60a5fa,#93c5fd)"></div></div>
+    <div id="time" class="text-gray-200 text-xs font-mono font-bold mt-1">00:00</div>
+    <div id="kc" class="text-yellow-300 text-sm font-bold mt-0.5">🔑 鍵: 0 / ?</div>
+    <div id="diff" class="text-purple-300 text-xs font-bold mt-0.5">難易度: 普通</div>
+    <div id="es" class="text-green-300 text-xs font-bold mt-0.5">安全</div>
+  </div>
+  <div class="fixed top-3 right-3 z-40 flex flex-col gap-1 items-end">
+    <div class="text-xs text-gray-100 font-bold ui-box" style="padding:3px 8px">持ち物（クリック/1〜4で使用）</div>
+    <div id="items" class="grid grid-cols-4 gap-1 ui-box" style="padding:7px 6px"></div>
+  </div>
+  <div class="fixed bottom-3 right-3 z-40 flex flex-col gap-1 items-end">
+    <div class="text-[10px] text-gray-100 font-bold ui-box" style="padding:2px 6px">クリックで全体図</div>
+        <div id="minimapWrap" onclick="event.stopPropagation();openMap()" style="cursor:pointer;position:relative;z-index:50"><canvas id="mini" width="200" height="150"></canvas></div>
+  </div>
+  <div class="fixed bottom-3 left-3 z-40 text-[11px] text-gray-100 space-y-0.5 ui-box font-bold">
+    <div>WASD/矢印:移動 / Shift:ダッシュ</div>
+    <div>Space:調べる・開ける・隠れる / 1〜4:アイテム使用</div>
+  </div>
+</div>
+
+<script>
+// ========== 図鑑：発見ログ ==========
+const BOOK_KEY = 'mori_no_shiroi_kage_book_v1';
+function loadBook(){
+  try { return JSON.parse(localStorage.getItem(BOOK_KEY) || '{"enemy":[],"item":[]}'); }
+  catch(e){ return {enemy:[],item:[]}; }
+}
+function saveBook(b){ localStorage.setItem(BOOK_KEY, JSON.stringify(b)); }
+function markSeen(type, id){
+  const b = loadBook();
+  if (!b[type].includes(id)){ b[type].push(id); saveBook(b); }
+}
+function openBook(type){
+  const b = loadBook();
+  $('bookTitle').textContent = type==='enemy' ? '森 の 住 人' : 'アイテム 一 覧';
+  const body = $('bookBody');
+  body.innerHTML = '';
+    if (type === 'enemy') {
+    // 各敵の色・形定義
+    const enemyArt = {
+      1: { bg:'#cfe3ff', shadow:'#bfdbfe', eye:'#000', accent:'#dc2626', label:'亡霊' },
+      2: { bg:'rgba(124,58,237,0.75)', shadow:'#7c3aed', eye:'#c4b5fd', accent:'#a78bfa', label:'怨念体' },
+      3: { bg:'#92400e', shadow:'#f59e0b', eye:'#000', accent:'#fbbf24', label:'怨霊' },
+      4: { bg:'#0a0a0a', shadow:'#111827', eye:'#ef4444', accent:'#dc2626', label:'闇霊' },
+      5: { bg:'#1e1b4b', shadow:'#4338ca', eye:'#facc15', accent:'#a855f7', label:'？？？' }
+    };
+
+    for (let i=1;i<=5;i++){
+      const seen = b.enemy.includes(i);
+      const name = seen ? ENEMY_NAMES[i] : '？？？';
+      const desc = seen ? ENEMY_DESC[i] : 'まだ遭遇していない相手。森の奥へ進むと現れるかも……';
+      const art = enemyArt[i];
+
+      body.insertAdjacentHTML('beforeend', `
+        <div class="p-3 rounded border-2 ${seen?'border-green-700 bg-green-950/40':'border-gray-700 bg-black/60'} flex gap-3 items-start">
+          <!-- 敵アイコン部分 -->
+          <div style="flex-shrink:0;width:64px;height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:${seen?'#0b1209':'#111'};box-shadow:${seen?'inset 0 0 12px '+art.shadow:'none'}">
+            ${seen ? `
+              <svg width="48" height="48" viewBox="-24 -24 48 48">
+                ${i===1 ? `
+  <ellipse cx="0" cy="2" rx="15" ry="17" fill="${art.bg}"/>
+  <rect x="-10" y="-8" width="5" height="9" fill="${art.eye}"/>
+  <rect x="5" y="-8" width="5" height="9" fill="${art.eye}"/>
+  <rect x="-8" y="-3" width="2" height="3" fill="${art.accent}"/>
+  <rect x="6" y="-3" width="2" height="3" fill="${art.accent}"/>
+  <path d="M-11 7 Q0 15 11 7" stroke="${art.eye}" stroke-width="2" fill="none"/>
+` : i===2 ? `
+  <circle cx="-8" cy="-4" r="7" fill="${art.bg}"/>
+  <circle cx="7" cy="-5" r="6" fill="${art.bg}"/>
+  <circle cx="-3" cy="7" r="8" fill="${art.bg}"/>
+  <circle cx="0" cy="0" r="4" fill="${art.eye}"/>
+` : i===3 ? `
+  <rect x="-14" y="-14" width="28" height="28" fill="${art.bg}" stroke="${art.accent}" stroke-width="2"/>
+  <rect x="-8" y="-6" width="4" height="4" fill="${art.eye}"/>
+  <rect x="4" y="-6" width="4" height="4" fill="${art.eye}"/>
+  <circle cx="0" cy="0" r="16" fill="none" stroke="${art.accent}" stroke-width="1" stroke-dasharray="3 3"/>
+` : i===4 ? `
+  <polygon points="0,-16 13,11 4,9 0,14 -4,9 -13,11" fill="${art.bg}"/>
+  <circle cx="-5" cy="-4" r="2.5" fill="${art.eye}"/>
+  <circle cx="5" cy="-4" r="2.5" fill="${art.eye}"/>
+` : i===5 ? `
+  <ellipse cx="0" cy="4" rx="16" ry="14" fill="${art.bg}"/>
+  <path d="M-16 2 Q-22 -10 -10 -14" stroke="${art.accent}" stroke-width="2.5" fill="none"/>
+  <path d="M16 2 Q22 -10 10 -14" stroke="${art.accent}" stroke-width="2.5" fill="none"/>
+  <circle cx="-5" cy="-2" r="2.5" fill="${art.eye}"/>
+  <circle cx="5" cy="-2" r="2.5" fill="${art.eye}"/>
+  <circle cx="-5" cy="-2" r="1" fill="#000"/>
+  <circle cx="5" cy="-2" r="1" fill="#000"/>
+  <path d="M-7 6 Q0 12 7 6" stroke="${art.eye}" stroke-width="1.5" fill="none"/>
+` : ``}
+              </svg>
+            ` : `
+              <span style="font-size:32px;opacity:0.3">❓</span>
+            `}
+          </div>
+          <!-- 説明部分 -->
+          <div style="flex:1;min-width:0">
+            <div class="font-bold text-lg mb-1 ${seen?'text-green-300':'text-gray-500'}">
+              ${seen?i+'. ':''}${name}
+            </div>
+            ${seen ? `<div class="text-[11px] text-green-400/80 mb-1">種別：${art.label}</div>` : ''}
+            <div class="text-sm text-gray-300 leading-relaxed">${desc}</div>
+          </div>
+        </div>`);
+    }
+  } else {
+    Object.entries(ITEM_DEF).forEach(([name, def], idx)=>{
+      const seen = b.item.includes(name);
+      body.insertAdjacentHTML('beforeend', `
+        <div class="p-3 rounded border-2 ${seen?'border-yellow-700 bg-yellow-950/30':'border-gray-700 bg-black/60'}">
+          <div class="font-bold text-base mb-1 ${seen?'text-yellow-300':'text-gray-500'}">
+            ${seen?def.icon:'❔'} ${seen?name:'？？？'}
+          </div>
+          <div class="text-sm text-gray-300 leading-relaxed">
+            ${seen?def.desc:'まだ手に入れていないアイテム。'}
+          </div>
+        </div>`);
+    });
+  }
+  show('book');
+}
+</script>
+<script>
+// ========== 効果音（Web Audio） ==========
+const SE = { ctx:null, master:null, heartbeat:null, hbOn:false };
+function initAudio(){
+  if(SE.ctx) return;
+  try{
+    SE.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    SE.master = SE.ctx.createGain();
+    SE.master.gain.value = 0.6;
+    SE.master.connect(SE.ctx.destination);
+  }catch(e){ console.warn('Audio not supported'); }
+}
+function resumeAudio(){ if(SE.ctx && SE.ctx.state==='suspended') SE.ctx.resume(); }
+function beep({freq=440, dur=0.15, type='sine', vol=0.3, slide=0, delay=0}){
+  if(!SE.ctx) return;
+  const t0 = SE.ctx.currentTime + delay;
+  const o = SE.ctx.createOscillator();
+  const g = SE.ctx.createGain();
+  o.type = type; o.frequency.setValueAtTime(freq, t0);
+  if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(30,freq+slide), t0+dur);
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(vol, t0+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+  o.connect(g); g.connect(SE.master);
+  o.start(t0); o.stop(t0+dur+0.02);
+}
+function noise({dur=0.3, vol=0.2, filter=1000, delay=0}){
+  if(!SE.ctx) return;
+  const t0 = SE.ctx.currentTime + delay;
+  const buf = SE.ctx.createBuffer(1, SE.ctx.sampleRate*dur, SE.ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * (1-i/d.length);
+  const src = SE.ctx.createBufferSource(); src.buffer = buf;
+  const bp = SE.ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=filter;
+  const g = SE.ctx.createGain(); g.gain.value = vol;
+  src.connect(bp); bp.connect(g); g.connect(SE.master);
+  src.start(t0);
+}
+const SFX = {
+  click: () => { beep({freq:700, dur:0.05, type:'square', vol:0.15}); beep({freq:1000, dur:0.05, type:'square', vol:0.12, delay:0.04}); },
+  door: () => { noise({dur:0.5, vol:0.25, filter:300}); beep({freq:180, dur:0.3, type:'sawtooth', vol:0.15, slide:-80}); },
+  key: () => { beep({freq:880, dur:0.08, type:'triangle', vol:0.3}); beep({freq:1320, dur:0.12, type:'triangle', vol:0.28, delay:0.07}); beep({freq:1760, dur:0.18, type:'triangle', vol:0.22, delay:0.16}); },
+  item: () => { beep({freq:523, dur:0.08, type:'sine', vol:0.25}); beep({freq:659, dur:0.08, type:'sine', vol:0.25, delay:0.07}); beep({freq:784, dur:0.14, type:'sine', vol:0.25, delay:0.14}); },
+  appear: () => { noise({dur:1.2, vol:0.35, filter:180}); beep({freq:90, dur:1.0, type:'sawtooth', vol:0.3, slide:-50}); },
+  chase: (on) => {
+    if(!SE.ctx) return;
+    if(on && !SE.hbOn){
+      SE.hbOn = true;
+      const beat = () => {
+        if(!SE.hbOn) return;
+        beep({freq:60, dur:0.12, type:'sine', vol:0.5});
+        beep({freq:50, dur:0.14, type:'sine', vol:0.4, delay:0.22});
+        SE.heartbeat = setTimeout(beat, 650);
+      };
+      beat();
+    } else if(!on && SE.hbOn){
+      SE.hbOn = false;
+      clearTimeout(SE.heartbeat);
+    }
+  },
+  caught: () => {
+    SFX.chase(false);
+    noise({dur:0.8, vol:0.5, filter:500});
+    beep({freq:300, dur:0.3, type:'sawtooth', vol:0.4, slide:-200});
+    beep({freq:150, dur:0.8, type:'sawtooth', vol:0.4, slide:-100, delay:0.15});
+  },
+  use: () => { beep({freq:600, dur:0.06, type:'square', vol:0.2}); beep({freq:900, dur:0.1, type:'square', vol:0.18, delay:0.05}); },
+  hide: () => { beep({freq:200, dur:0.2, type:'sine', vol:0.2, slide:80}); },
+  stun: () => { noise({dur:0.25, vol:0.3, filter:2000}); beep({freq:1200, dur:0.15, type:'square', vol:0.2, slide:-800}); },
+  clear: () => {
+    [523,659,784,1047].forEach((f,i)=>beep({freq:f, dur:0.2, type:'triangle', vol:0.3, delay:i*0.14}));
+  }
+};
+
+// ========== 定数 ==========
+const TILE=32, MW=80, MH=64;
+const AREA=['北西の森','北の森','北東の森','西の森','中央の森','東の森','南西の森','南の森','南東の森'];
+const HUTS=[{x:18,y:8,w:7,h:6,n:'北西の廃小屋'},{x:58,y:7,w:7,h:6,n:'北東の廃小屋'},{x:10,y:35,w:7,h:6,n:'南西の廃小屋'},{x:62,y:38,w:7,h:6,n:'南東の廃小屋'},{x:36,y:48,w:8,h:6,n:'最南端の大きな廃小屋'}];
+const BUSH=[[3,12],[75,15],[5,52],[74,50],[30,30],[50,30],[15,20],[65,25],[40,15],[25,45],[55,45],[42,25],[10,10],[70,30],[20,55],[60,55]];
+const GX=40;
+const ENEMY_NAMES=['','白いもの','這い寄るもの','荒ぶるもの','黒いもの','統べるもの'];
+const ENEMY_DESC = {
+  1:'何もかもが普通なことを気にしている。荒ぶるものに憧れている。',
+  2:'？？？',
+  3:'荒ぶりながら追いかけてくる。よく木々にぶつかっている。',
+  4:'見られるのが大嫌い。頭のおかしいインキャ。',
+  5:'？？？'
+};
+const ITEM_DEF = {
+  '懐中電灯':   {icon:'🔦', use:false, desc:'常時：周囲が明るくなる'},
+  '古いメモ':   {icon:'📜', use:true,  desc:'使用：全ての鍵が地図に表示される'},
+  '魔法の杖':{icon:'🪄', use:true,  desc:'使用：最寄りの敵を怯ませて弾き飛ばす'},
+  '薬':       {icon:'💊', use:true,  desc:'使用：スタミナが全回復する'}
+};
+const DIFF = {
+  // 1番簡単：初心者導入
+  peace:  {name:'静寂', keys:5,  enemies:[2,0,0,0,0], spd:0.8,  vis:300, stm:1.3, stmRegen:1.3, itemBoost:1.5},
+  // 2番目：標準
+  warn:   {name:'平穏', keys:7,  enemies:[2,1,0,0,0], spd:1.0,  vis:220, stm:1.0, stmRegen:1.0, itemBoost:1.0},
+  // 3番目：慣れた人向け
+  crisis: {name:'異変', keys:10, enemies:[2,1,1,0,0], spd:1.05, vis:190, stm:0.9, stmRegen:0.95,itemBoost:0.9},
+  // 4番目：かなり難しい
+  fear:   {name:'恐怖', keys:10, enemies:[3,2,1,1,0], spd:1.12, vis:170, stm:0.8, stmRegen:0.85,itemBoost:0.8},
+  // 5番目：奇跡レベル
+  ruler:  {name:'悪夢', keys:10, enemies:[3,2,1,1,1], spd:1.15, vis:150, stm:0.75,stmRegen:0.8, itemBoost:0.75}
+};
+
+// ========== ゲーム状態 ==========
+const G = {
+  running:false, diff:'normal', map:[], doors:[], keys:[], items:[], bushes:[], huts:[],
+  player:{x:0,y:0,dir:0,spd:2.2,stm:100,stmMax:100,sm:100,smMax:100,hide:false,hideT:0,
+         boost:0,photo:0,keys:0,inv:[],invMax:4,stunT:0,stuck:false,face:{x:0,y:-1}},
+  enemies:[], t:0, startTime:0, last:0, cam:{x:0,y:0}, area:-1,
+  memos:false, memoT:0, encount:false, encT:0, gameover:false, cleared:false,
+  radioNear:false, nearEnemy:null
+};
+
+// ========== ユーティリティ ==========
+function show(id){ ['title','s1','over','clear','ui','book','mapModal'].forEach(x=>document.getElementById(x).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function selDiff(d){
+  G.diff = d;
+  document.querySelectorAll('.diff').forEach(x => {
+    x.classList.toggle('active', x.dataset.d === d);
+  });
+  SFX.click();
+}
+function msg(t, dur=2600){
+  const m=document.getElementById('msg'); m.textContent=t; m.classList.add('show');
+  clearTimeout(msg._t); msg._t=setTimeout(()=>m.classList.remove('show'), dur);
+}
+function $(id){ return document.getElementById(id); }
+
+// ========== マップ生成 ==========
+function makeMap(){
+  G.map = Array.from({length:MH},()=>Array(MW).fill(0)); // 0:床 1:木 2:小屋壁 3:ドア(閉) 4:ドア(開) 5:ゲート
+  // 外周の木
+  for(let x=0;x<MW;x++){ G.map[0][x]=1; G.map[MH-1][x]=1; }
+  for(let y=0;y<MH;y++){ G.map[y][0]=1; G.map[y][MW-1]=1; }
+  // ランダムな木の茂み
+  const rng = mulberry32(Date.now()&0xffffffff);
+  for(let i=0;i<650;i++){
+    const x=2+Math.floor(rng()*(MW-4)), y=2+Math.floor(rng()*(MH-4));
+    if(G.map[y][x]===0 && !((x>33&&x<47)&&(y>28&&y<38))) G.map[y][x]=1;
+  }
+  // 中央の広場
+  for(let y=28;y<38;y++) for(let x=33;x<47;x++) G.map[y][x]=0;
+  // 道（十字）
+  for(let x=2;x<MW-2;x++){ G.map[32][x]=0; G.map[33][x]=0; }
+  for(let y=2;y<MH-2;y++){ G.map[y][39]=0; G.map[y][40]=0; }
+
+  // 小屋
+  G.huts = HUTS.map(h=>({...h, entered:false}));
+  for(const h of G.huts){
+    for(let y=h.y;y<h.y+h.h;y++) for(let x=h.x;x<h.x+h.w;x++){
+      const edge = y===h.y||y===h.y+h.h-1||x===h.x||x===h.x+h.w-1;
+      G.map[y][x] = edge?2:0;
+    }
+    // ドアを南側中央に
+    const dx = h.x+Math.floor(h.w/2), dy = h.y+h.h-1;
+    G.map[dy][dx]=3;
+    G.doors.push({x:dx,y:dy,open:false,hut:h});
+    h.door = {x:dx,y:dy};
+    if (dy+1 < MH-1) {
+  G.map[dy+1][dx] = 0;
+  G.map[dy+1][dx-1] = 0; G.map[dy+1][dx+1] = 0;
+}
+  }
+  // 出口ゲート（北端中央）
+  G.gate = {x:GX,y:1, open:false};
+  G.map[1][GX]=5; G.map[1][GX+1]=5;
+
+  // 茂み
+  G.bushes = BUSH.map(([x,y])=>({x,y,used:false})).filter(b=>G.map[b.y]?.[b.x]===0);
+
+  // 鍵配置
+  const D = DIFF[G.diff];
+  G.keys = [];
+  const keySpots = [];
+  for(const h of G.huts) keySpots.push({x:h.x+Math.floor(h.w/2), y:h.y+Math.floor(h.h/2), inHut:true});
+  while(keySpots.length < D.keys+2){
+    const x=3+Math.floor(rng()*(MW-6)), y=3+Math.floor(rng()*(MH-6));
+    if(G.map[y][x]===0 && !keySpots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<6)) keySpots.push({x,y,inHut:false});
+  }
+  keySpots.sort(()=>rng()-0.5).slice(0,D.keys).forEach((s,i)=>G.keys.push({x:s.x,y:s.y,got:false,id:i+1,inHut:s.inHut}));
+
+  // アイテム配置
+  G.items = [];
+  const itemKeys = Object.keys(ITEM_DEF);
+  
+const itemCount = Math.min(4, 3 + Math.floor(D.keys/3));
+  const itemSpots = [];
+  while(itemSpots.length < itemCount+3){
+    const x=3+Math.floor(rng()*(MW-6)), y=3+Math.floor(rng()*(MH-6));
+    if(G.map[y][x]===0 && !G.keys.some(k=>k.x===x&&k.y===y) && !itemSpots.some(s=>Math.abs(s.x-x)+Math.abs(s.y-y)<5))
+      itemSpots.push({x,y});
+  }
+  itemSpots.slice(0,itemCount).forEach((s,i)=>{
+    const name = itemKeys[i % itemKeys.length];
+    G.items.push({x:s.x,y:s.y,name,got:false,icon:ITEM_DEF[name].icon});
+  });
+
+  // プレイヤー初期位置（南端中央）
+  G.player.x = (GX+0.5)*TILE;
+  G.player.y = (MH-4)*TILE;
+
+  // 敵配置
+  G.enemies = [];
+  let eid = 0;
+  D.enemies.forEach((cnt,idx)=>{
+    const type = idx+1;
+    for(let i=0;i<cnt;i++){
+      let x,y,tries=0;
+      do{ x=5+Math.floor(rng()*(MW-10)); y=5+Math.floor(rng()*(MH-10)); tries++; }
+      while((G.map[y][x]!==0 || dist2(x,y,G.player.x/TILE,G.player.y/TILE)<12) && tries<200);
+      G.enemies.push({id:++eid,type,x:x*TILE+TILE/2,y:y*TILE+TILE/2,
+        spd:0, dir:{x:0,y:0}, stun:0, cd:0, phase:0, seen:false, lastSeen:null, tx:0,ty:0, dash:0, armPhase: 0, // 0:待機 1:伸びる 2:維持 3:戻る
+armT: 0, armLen: 0, armAng: 0, armMax: TILE*30,});
+    }
+  });
+}
+function mulberry32(a){ return function(){ let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296; }; }
+function dist2(x1,y1,x2,y2){ const dx=x1-x2, dy=y1-y2; return dx*dx+dy*dy; }
+function tileAt(px,py){ const x=Math.floor(px/TILE), y=Math.floor(py/TILE); return G.map[y]?.[x] ?? 1; }
+function solid(t){ return t===1||t===2||t===3||t===5; } // ドア閉・ゲート閉は通れない
+function solidAt(px,py, enemy=false, enemyType=0){
+  const t = tileAt(px,py);
+  if(enemy){
+    // 這い寄るもの(type2)だけ壁抜け可、ただし外周木は不可
+    if(enemyType === 2){
+      const x=Math.floor(px/TILE), y=Math.floor(py/TILE);
+      if(x<=1 || y<=1 || x>=MW-2 || y>=MH-2) return true; // 外周だけは通せない
+      return false;
+    }
+    // その他の敵はプレイヤーと同じ衝突判定
+    return solid(t);
+  }
+  return solid(t);
+}
+
+// ========== 入力 ==========
+const KEY = {};
+addEventListener('keydown', e=>{
+  if(!G.running) return;
+  KEY[e.code]=true;
+  if(e.code==='Space'){ e.preventDefault(); action(); }
+  if(e.code.startsWith('Digit')){ const n=+e.code.slice(5)-1; if(n>=0&&n<4) useItem(n); }
+  if(e.code==='KeyM') openMap();
+  if(e.code==='Escape') closeMap();
+  resumeAudio();
+});
+addEventListener('keyup', e=>{ KEY[e.code]=false; });
+
+// ========== 行動（Space） ==========
+function action(){
+  const p = G.player; if(p.hide){ p.hide=false; $('hideInd').classList.remove('show'); SFX.hide(); msg('茂みから出た'); return; }
+  const px = p.x/TILE, py = p.y/TILE;
+  const fx = Math.floor(px + p.face.x), fy = Math.floor(py + p.face.y);
+  // ドア（どの方向からでも近ければ開く）
+const door = G.doors.find(d =>
+  Math.abs(d.x+0.5 - px) + Math.abs(d.y+0.5 - py) < 1.4 && !d.open
+);
+if (door) {
+  door.open = true;
+  G.map[door.y][door.x] = 4;
+  SFX.door();
+  msg(`🚪 ${door.hut.n}のドアを開けた`);
+  if (!door.hut.entered) {
+    door.hut.entered = true;
+    msg('中には埃っぽい空気が流れている……', 2200);
+  }
+  return;
+}
+  // ゲート
+  if((fx===G.gate.x||fx===G.gate.x+1) && fy===G.gate.y){
+    const D=DIFF[G.diff];
+    if(p.keys >= D.keys){
+      G.gate.open=true; G.cleared=true; SFX.clear();
+      $('clearInfo').textContent = `クリア時間：${fmtTime(G.t)}　手に入れた鍵：${p.keys}/${D.keys}　難易度：${D.name}`;
+      setTimeout(()=>{ G.running=false; show('clear'); SFX.chase(false); }, 900);
+    } else {
+      msg(`🔒 ゲートが固く閉まっている。あと ${D.keys - p.keys} 個の鍵が必要だ。`);
+    }
+    return;
+  }
+    // 茂みに隠れる
+  const bush = G.bushes.find(b=>Math.abs(b.x-px)+Math.abs(b.y-py)<1.4);
+  if(bush){
+    p.hide=true; p.hideT=0; $('hideInd').classList.add('show'); SFX.hide();
+    // 隠れた瞬間に全敵の視界情報をリセット
+    for(const e of G.enemies){
+      e.lastSeen = null;
+      e.seen = false;
+      // 徘徊用の目標を現在位置にリセット
+      e.tx = e.x; e.ty = e.y;
+    }
+    msg('🌿 茂みに身を潜めた。敵はこちらを見失うはず……');
+    return;
+  }
+  // 鍵取得
+  const key = G.keys.find(k=>!k.got && Math.abs(k.x+0.5-px)+Math.abs(k.y+0.5-py)<1.3);
+  if(key){
+    key.got=true; p.keys++; SFX.key();
+    msg(`🔑 鍵を手に入れた！（${p.keys}/${DIFF[G.diff].keys}）`, 2400);
+    // 一定数ごとに敵出現
+    const D=DIFF[G.diff];
+    if(G.diff !== 'peace'){
+  if(p.keys===Math.ceil(D.keys/2) || p.keys===D.keys-1){
+    spawnExtraEnemy();
+  }
+}
+
+    updateKC(); return;
+  }
+  // アイテム取得
+  const it = G.items.find(x=>!x.got && Math.abs(x.x+0.5-px)+Math.abs(x.y+0.5-py)<1.3);
+  if(it){
+    if(p.inv.length >= p.invMax){ msg('持ち物がいっぱいだ！'); return; }
+    it.got=true; p.inv.push(it.name);
+    markSeen('item', it.name);
+     SFX.item();
+    msg(`${it.icon} ${it.name} を拾った　→　${ITEM_DEF[it.name].desc}`);
+    drawItems(); return;
+  }
+  msg('（あたりを調べたが、何もなかった）', 1600);
+}
+function spawnExtraEnemy(){
+  const D=DIFF[G.diff];
+  const type = G.diff==='ruler' ? 5 : G.diff==='fear' ? 4 : 3;
+  let x,y,tries=0;
+  do{ x=5+Math.floor(Math.random()*(MW-10)); y=5+Math.floor(Math.random()*(MH-10)); tries++; }
+  while((G.map[y][x]!==0 || dist2(x,y,G.player.x/TILE,G.player.y/TILE)<10) && tries<200);
+  G.enemies.push({id:Date.now(),type,x:x*TILE+TILE/2,y:y*TILE+TILE/2,
+    spd:0,dir:{x:0,y:0},stun:0,cd:0,phase:0,seen:false,lastSeen:null,tx:0,ty:0,dash:0});
+  
+}
+
+// ========== アイテム使用 ==========
+function useItem(n){
+  const p=G.player; const name=p.inv[n]; if(!name) return;
+  const def=ITEM_DEF[name]; if(!def.use){ msg(`${def.icon} ${name} は自動的に効果を発揮する`, 1800); return; }
+  SFX.use();
+  switch(name){
+    case '古いメモ': G.memos=true; G.memoT=60*60; msg('📜 地図に鍵の位置が浮かび上がった！'); p.inv.splice(n,1); break;
+    case '魔法の杖':{
+      let near=null, bd=1e9;
+      for(const e of G.enemies){ const d=dist2(e.x/TILE,e.y/TILE,p.x/TILE,p.y/TILE); if(d<bd){bd=d; near=e;} }
+      if(near && bd<36){
+        near.stun = 60*4;
+        const dx=near.x-p.x, dy=near.y-p.y, L=Math.hypot(dx,dy)||1;
+        near.x += dx/L*TILE*3; near.y += dy/L*TILE*3;
+        SFX.stun(); msg('🪄 敵を怯ませて遠くに弾き飛ばした！');
+      } else { msg('🪄 周りに敵はいなかった……'); }
+      p.inv.splice(n,1);
+      break;
+    }
+    case '薬':
+      p.stm=p.stmMax; p.boost=60*10;
+      msg('💊 スタミナ全回復！しばらくダッシュしても疲れない！');
+      p.inv.splice(n,1);
+      break;
+  }
+  drawItems();
+}
+function drawItems(){
+  const el=$('items'); el.innerHTML='';
+  for(let i=0;i<4;i++){
+    const name=G.player.inv[i]; const d=document.createElement('div');
+    d.className='item'+(name?' has':'');
+    if(name){
+      const def=ITEM_DEF[name];
+      d.innerHTML = `<span>${def.icon}</span><span class="n">${def.icon} ${name}<br><span style="color:#bbb;font-weight:400;font-size:10px">${def.desc}</span></span><span class="k">${i+1}</span>`;
+      d.onclick = ()=>useItem(i);
+    } else d.innerHTML='<span style="opacity:.2">·</span>';
+    el.appendChild(d);
+  }
+}
+
+// ========== プレイヤー更新 ==========
+function updatePlayer(dt){
+  const p=G.player; const D=DIFF[G.diff];
+  if(p.hide){ p.hideT++; return; }
+  let mx=0,my=0;
+  if(KEY.ArrowUp||KEY.KeyW) my-=1;
+  if(KEY.ArrowDown||KEY.KeyS) my+=1;
+  if(KEY.ArrowLeft||KEY.KeyA) mx-=1;
+  if(KEY.ArrowRight||KEY.KeyD) mx+=1;
+  const len=Math.hypot(mx,my);
+  if(len>0){ mx/=len; my/=len; p.face={x:mx,y:my}; }
+  let spd = p.spd * D.spd * 60 * dt;
+  const dash = (KEY.ShiftLeft||KEY.ShiftRight) && len>0 && p.stm>0.5;
+  if(dash){ spd*=1.75; p.stm = Math.max(0, p.stm - 28*D.stm*dt); }
+  else p.stm = Math.min(p.stmMax, p.stm + 22*D.stmRegen*dt);
+  if(p.boost>0){ p.boost-=60*dt; if(dash) p.stm = Math.min(p.stmMax, p.stm+30*dt); }
+  if(p.photo>0){ p.photo-=60*dt; spd*=1.15; }
+
+  // 移動（軸別衝突）
+  const r = TILE*0.3;
+  let nx = p.x + mx*spd;
+  if(!solidAt(nx-r,p.y) && !solidAt(nx+r,p.y) && !solidAt(nx-r,p.y-r) && !solidAt(nx+r,p.y-r) && !solidAt(nx-r,p.y+r) && !solidAt(nx+r,p.y+r)) p.x=nx;
+  let ny = p.y + my*spd;
+  if(!solidAt(p.x-r,ny) && !solidAt(p.x+r,ny) && !solidAt(p.x-r,ny-r) && !solidAt(p.x+r,ny-r) && !solidAt(p.x-r,ny+r) && !solidAt(p.x+r,ny+r)) p.y=ny;
+
+  // エリア判定
+  const tx=Math.floor(p.x/TILE), ty=Math.floor(p.y/TILE);
+  const ax = Math.min(2,Math.floor(tx/(MW/3))), ay=Math.min(2,Math.floor(ty/(MH/3)));
+  const ar = ay*3+ax;
+  if(ar!==G.area){ G.area=ar; $('area').textContent=AREA[ar]; }
+
+  // 精神値（敵が近いと減る）
+  let near = null, bd=1e9;
+  for(const e of G.enemies){
+    const d=dist2(e.x,e.y,p.x,p.y); if(d<bd){bd=d; near=e;}
+  }
+  G.nearEnemy = near;
+  const thr = (TILE*8)*(TILE*8);
+if(near && bd<thr && !p.hide){
+  p.sm = Math.max(0, p.sm - 9*dt*(1 - bd/thr));
+  G.radioNear = true;
+} else {
+  // 回復速度は据え置き or 少し上げるなら 6→8
+  p.sm = Math.min(p.smMax, p.sm + 8*dt);
+  G.radioNear = false;
+}
+  SFX.chase(near && bd < (TILE*6)*(TILE*6) && !p.hide);
+}
+
+// ========== 敵AI ==========
+function updateEnemies(dt){
+  const p=G.player; const D=DIFF[G.diff];
+  if(p.hide){
+    for(const e of G.enemies){
+      e.lastSeen = null;
+      e.seen = false;
+      // ゆっくりとその場に留まる or ゆっくり離れる
+      if(e.type !== 2){
+        e.x += (Math.random()-0.5) * 0.3;
+        e.y += (Math.random()-0.5) * 0.3;
+      }
+    }
+    return;
+  }
+  for(const e of G.enemies){
+    markSeen('enemy', e.type);
+    if(e.stun>0){ e.stun-=60*dt; continue; }
+    const ex=e.x/TILE, ey=e.y/TILE, px=p.x/TILE, py=p.y/TILE;
+    const seeR = (e.type===2?18:12) * TILE;
+    const d2 = dist2(e.x,e.y,p.x,p.y);
+    const canSee = d2 < seeR*seeR && hasLine(e.x,e.y,p.x,p.y,e.type);
+    if(canSee && !p.hide){ e.lastSeen={x:p.x,y:p.y}; e.seen=true; }
+
+    if(e.lastSeen){
+      const forgetDist = (TILE * 10) * (TILE * 10); // 10マス以上離れたら忘れる
+      const distFromLast = dist2(p.x,p.y,e.lastSeen.x,e.lastSeen.y);
+      if(distFromLast > forgetDist || d2 > (TILE * 14) * (TILE * 14)){
+        e.lastSeen = null;
+        e.seen = false;
+      }
+    }
+
+
+    let tx=e.x, ty=e.y, spd=0;
+    switch(e.type){
+            case 1: { // 白いもの：普通に追跡・見失ったらゆっくり徘徊
+        spd = 1.5 * D.spd * 60 * dt;
+        const t = e.lastSeen;
+        if(t){
+          const dx=t.x-e.x, dy=t.y-e.y, L=Math.hypot(dx,dy)||1;
+          // 目標に到達していたら索敵モードへ
+          if(L < TILE*0.5){ e.lastSeen = null; break; }
+          tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+        } else {
+          // 徘徊：ゆっくりランダム移動
+          spd *= 0.35;
+          e.cd -= 60*dt;
+          if(e.cd <= 0 || dist2(e.x,e.y,e.tx,e.ty) < 4){
+            e.tx = e.x + (Math.random()-0.5)*TILE*8;
+            e.ty = e.y + (Math.random()-0.5)*TILE*8;
+            e.cd = 1.5 + Math.random()*1.5;
+          }
+          const dx=e.tx-e.x, dy=e.ty-e.y, L=Math.hypot(dx,dy)||1;
+          tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+        }
+        break;
+      }
+      case 2: { // 這い寄る：壁抜け可・視界広い → 更に遅く
+  spd = 0.6 * D.spd * 60 * dt;
+  const dx=p.x-e.x, dy=p.y-e.y, L=Math.hypot(dx,dy)||1;
+  tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+  break;
+}
+      case 3: { // 荒ぶるもの：カクカク直線・ダッシュ
+        e.cd -= 60*dt;
+        if(e.phase===0){ // 溜め
+          if(e.cd<=0){ e.phase=1; e.cd=0.35; const dx=p.x-e.x, dy=p.y-e.y, L=Math.hypot(dx,dy)||1; e.dir={x:dx/L,y:dy/L}; }
+        } else { // ダッシュ
+          spd = 5.2 * D.spd * 60 * dt;
+          tx=e.x+e.dir.x*spd; ty=e.y+e.dir.y*spd;
+          e.cd -= 60*dt;
+          if(e.cd<=0){ e.phase=0; e.cd=1.1+Math.random()*0.6; }
+        }
+        break;
+      }
+      case 4: { // 黒いもの：向きで速度変化
+  const dx=p.x-e.x, dy=p.y-e.y, L=Math.hypot(dx,dy)||1;
+  const facing = (dx/L)*p.face.x + (dy/L)*p.face.y;
+  // 元の1.8 → 1.2に抑え、基礎速度を下げる
+  const baseMult = G.diff === 'easy' ? 0.55 : 1;
+const mult = (facing>0.4 ? 0.35 : facing<-0.3 ? 1.0 : 0.6) * baseMult;
+  spd = mult * D.spd * 60 * dt;
+  tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+  break;
+          // 追加：見失ったらゆっくり徘徊
+        if(!e.lastSeen){
+          spd *= 0.3;
+          e.cd -= 60*dt;
+          if(e.cd <= 0 || dist2(e.x,e.y,e.tx,e.ty) < 4){
+            e.tx = e.x + (Math.random()-0.5)*TILE*6;
+            e.ty = e.y + (Math.random()-0.5)*TILE*6;
+            e.cd = 2 + Math.random()*2;
+          }
+          const dx=e.tx-e.x, dy=e.ty-e.y, L=Math.hypot(dx,dy)||1;
+          tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+        }
+        break;
+}
+case 5: { // 統べるもの：本体は超遅く直進、手だけ速く伸びる
+  // 本体：索敵無限、常にプレイヤーへ超低速で移動
+  spd = 0.35 * D.spd * 60 * dt;
+  const dx=p.x-e.x, dy=p.y-e.y, L=Math.hypot(dx,dy)||1;
+  tx=e.x+dx/L*spd; ty=e.y+dy/L*spd;
+  // 手は「伸び始める瞬間」の方向にまっすぐ伸びる（途中で追尾しない）
+  if(e.armPhase === 0) e.armAng = Math.atan2(dy,dx);
+
+  // 手の状態管理
+  e.armT -= 60*dt;
+  switch(e.armPhase){
+    case 0: // 待機 
+      if(e.armT<=0){ e.armPhase=1; e.armT=3.0; e.armLen=0; }
+      break;
+    case 1: // 伸びる
+      e.armLen += (e.armMax/3.0)*dt;
+      if(e.armLen>=e.armMax){ e.armLen=e.armMax; e.armPhase=2; e.armT=1.5; }
+      break;
+    case 2: // 維持
+      if(e.armT<=0){ e.armPhase=3; e.armT=0.5; }
+      break;
+    case 3: // 戻る
+      e.armLen -= (e.armMax/0.5)*dt;
+      if(e.armLen<=0){ e.armLen=0; e.armPhase=0; e.armT=3.5+Math.random()*2; }
+      break;
+  }
+
+  // 手の先端の当たり判定
+  if(e.armLen>0){
+    const hx = e.x + Math.cos(e.armAng)*e.armLen;
+    const hy = e.y + Math.sin(e.armAng)*e.armLen;
+    if(!p.hide && dist2(hx,hy,p.x,p.y) < (TILE*0.6)*(TILE*0.6)){
+      gameOver(e);
+    }
+  }
+  break;
+}
+    }
+    
+    
+
+    // 移動適用（type2以外は衝突判定）
+    if(e.type!==2){
+  const r=TILE*0.28;
+  if(!solidAt(tx-r,e.y, true, e.type) && !solidAt(tx+r,e.y, true, e.type)) e.x=tx;
+  if(!solidAt(e.x,ty-r, true, e.type) && !solidAt(e.x,ty+r, true, e.type)) e.y=ty;
+} else {
+  // type2は外周だけ通せない
+  const r=TILE*0.28;
+  if(!solidAt(tx-r,e.y, true, e.type) && !solidAt(tx+r,e.y, true, e.type)) e.x=tx;
+  if(!solidAt(e.x,ty-r, true, e.type) && !solidAt(e.x,ty+r, true, e.type)) e.y=ty;
+}
+
+
+    // 接触判定
+    if(!p.hide && dist2(e.x,e.y,p.x,p.y) < (TILE*0.7)*(TILE*0.7)){
+      gameOver(e);
+    }
+  }
+}
+function hasLine(x1,y1,x2,y2,type){
+  const steps = Math.ceil(Math.hypot(x2-x1,y2-y1)/6);
+  for(let i=1;i<steps;i++){
+    const t=i/steps, x=x1+(x2-x1)*t, y=y1+(y2-y1)*t;
+    const v = tileAt(x,y);
+    if(type===2){ if(v===1 && (x<TILE*2||y<TILE*2||x>(MW-2)*TILE||y>(MH-2)*TILE)) return false; }
+    else { if(v===1||v===2) return false; }
+  }
+  return true;
+}
+function gameOver(e){
+  if(G.gameover) return;
+  G.gameover=true; G.running=false; SFX.caught(); SFX.chase(false); // ここだけにする
+  const D=DIFF[G.diff];
+  $('overInfo').textContent = `生存時間：${fmtTime(G.t)}　手に入れた鍵：${G.player.keys}/${D.keys}　倒した相手：${ENEMY_NAMES[e.type]}`;
+  setTimeout(()=>{ show('over'); }, 1200); // setTimeout内からは削除
+}
+
+// ========== カメラ / レンダリング ==========
+const cv=$('cv'), ctx=cv.getContext('2d');
+function fitCanvas(){ cv.width=innerWidth; cv.height=innerHeight; }
+addEventListener('resize', fitCanvas);
+function render(){
+  const W=cv.width, H=cv.height;
+  const p=G.player; const D=DIFF[G.diff];
+  // カメラ追従
+  G.cam.x += (p.x - W/2 - G.cam.x)*0.12;
+  G.cam.y += (p.y - H/2 - G.cam.y)*0.12;
+
+  ctx.fillStyle='#05070a'; ctx.fillRect(0,0,W,H);
+  ctx.save();
+  ctx.translate(-G.cam.x, -G.cam.y);
+
+  // 地面
+  const x0=Math.max(0,Math.floor(G.cam.x/TILE)-1), y0=Math.max(0,Math.floor(G.cam.y/TILE)-1);
+  const x1=Math.min(MW,Math.ceil((G.cam.x+W)/TILE)+2), y1=Math.min(MH,Math.ceil((G.cam.y+H)/TILE)+2);
+  for(let y=y0;y<y1;y++) for(let x=x0;x<x1;x++){
+    const t=G.map[y][x]; const px=x*TILE, py=y*TILE;
+    // 地面のベース
+    ctx.fillStyle = (x+y)%2===0 ? '#0b1209' : '#0a1008';
+    ctx.fillRect(px,py,TILE,TILE);
+    // タイル別描画
+    if(t===1){ // 木
+      ctx.fillStyle='#1a2e15'; ctx.fillRect(px+2,py+2,TILE-4,TILE-4);
+      ctx.fillStyle='#2d4a22'; ctx.beginPath();
+      ctx.arc(px+TILE/2,py+TILE/2,TILE/2-3,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#3d632c'; ctx.beginPath();
+      ctx.arc(px+TILE/2-4,py+TILE/2-4,TILE/3,0,Math.PI*2); ctx.fill();
+    } else if(t===2){ // 小屋壁
+      ctx.fillStyle='#3a2a1a'; ctx.fillRect(px,py,TILE,TILE);
+      ctx.fillStyle='#2a1d10'; ctx.fillRect(px+2,py+2,TILE-4,TILE-4);
+      ctx.strokeStyle='#5a4028'; ctx.lineWidth=1;
+      ctx.strokeRect(px+3,py+3,TILE-6,TILE-6);
+    } else if(t===3){ // ドア閉
+      ctx.fillStyle='#6b4423'; ctx.fillRect(px+4,py,TILE-8,TILE);
+      ctx.fillStyle='#4a2e16'; ctx.fillRect(px+6,py+4,TILE-12,TILE-8);
+      ctx.fillStyle='#fbbf24'; ctx.beginPath();
+      ctx.arc(px+TILE-10,py+TILE/2,2,0,Math.PI*2); ctx.fill();
+    } else if(t===4){ // ドア開
+      ctx.fillStyle='#1a0f08'; ctx.fillRect(px+2,py,TILE-4,TILE);
+      ctx.fillStyle='#6b4423'; ctx.fillRect(px,py,5,TILE);
+    } else if(t===5){ // ゲート
+      ctx.fillStyle = G.gate.open ? '#052e16' : '#374151';
+      ctx.fillRect(px,py,TILE,TILE);
+      ctx.strokeStyle = G.gate.open ? '#22c55e' : '#9ca3af';
+      ctx.lineWidth=3; ctx.strokeRect(px+3,py+3,TILE-6,TILE-6);
+      if(G.gate.open){
+        ctx.fillStyle='#22c55e'; ctx.font='bold 14px sans-serif';
+        ctx.textAlign='center'; ctx.fillText('↑',px+TILE/2,py+TILE/2+5);
+      }
+    }
+  }
+
+    // 茂み
+  for(const b of G.bushes){
+    const px=b.x*TILE, py=b.y*TILE;
+    const cx=px+TILE/2, cy=py+TILE/2;
+    const pulse = 0.85 + Math.sin(G.t*2.2 + b.x + b.y)*0.15;
+
+    // 外側の柔らかい発光（隠れられる目印）
+    ctx.save();
+    const g = ctx.createRadialGradient(cx,cy,2,cx,cy,TILE*0.85);
+    g.addColorStop(0, 'rgba(74,222,128,0.35)');
+    g.addColorStop(0.6, 'rgba(34,197,94,0.12)');
+    g.addColorStop(1, 'rgba(34,197,94,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(cx,cy,TILE*0.85*pulse,0,Math.PI*2);
+    ctx.fill();
+
+    // 茂み本体：濃い緑
+    ctx.fillStyle='#1f3a1a'; ctx.beginPath();
+    ctx.arc(cx,cy,TILE*0.55,0,Math.PI*2); ctx.fill();
+
+    // 明るい緑の葉っぱを重ねる
+    ctx.fillStyle='#2e5524'; ctx.beginPath();
+    ctx.arc(cx-5,cy-4,TILE*0.36,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#3d7030'; ctx.beginPath();
+    ctx.arc(cx+4,cy+3,TILE*0.28,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#4ade80'; ctx.beginPath();
+    ctx.arc(cx-1,cy-1,TILE*0.12,0,Math.PI*2); ctx.fill();
+
+    // 中央に「隠れられるマーク」の薄い輪郭
+    ctx.strokeStyle = `rgba(134,239,172,${0.35 + Math.sin(G.t*3 + b.x)*0.2})`;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.arc(cx,cy,TILE*0.62*pulse,0,Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  // 鍵
+  for(const k of G.keys){
+    if(k.got) continue;
+    const px=k.x*TILE+TILE/2, py=k.y*TILE+TILE/2;
+    const bob=Math.sin(G.t*4+k.id)*2;
+    ctx.save(); ctx.translate(px,py+bob);
+    ctx.shadowColor='#fbbf24'; ctx.shadowBlur=12;
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(-2,-10,4,10);
+    ctx.beginPath(); ctx.arc(0,-12,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#000'; ctx.beginPath(); ctx.arc(0,-12,2,0,Math.PI*2); ctx.fill();
+    ctx.fillRect(2,-3,5,2); ctx.fillRect(2,0,3,2);
+    ctx.restore();
+  }
+
+  // アイテム
+  for(const it of G.items){
+    if(it.got) continue;
+    const px=it.x*TILE+TILE/2, py=it.y*TILE+TILE/2;
+    const bob=Math.sin(G.t*3+it.x)*2;
+    ctx.save(); ctx.translate(px,py+bob);
+    ctx.shadowColor='#60a5fa'; ctx.shadowBlur=10;
+    ctx.font='20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(it.icon,0,0);
+    ctx.restore();
+  }
+
+  // 敵
+  for(const e of G.enemies){
+    ctx.save(); ctx.translate(e.x,e.y);
+    const stun = e.stun>0;
+    ctx.globalAlpha = stun ? 0.5 : 1;
+    if(e.type===1){ // 白いもの → 不気味版
+  const pulse = 1 + Math.sin(G.t*2 + e.id)*0.08;
+  ctx.shadowColor='#bfdbfe'; ctx.shadowBlur=18;
+  // 体：青白く、少し歪んだ形
+  ctx.fillStyle='#cfe3ff';
+  ctx.beginPath();
+  ctx.ellipse(0, 2, TILE*0.42*pulse, TILE*0.48*pulse, 0, 0, Math.PI*2);
+  ctx.fill();
+  // 細長い目（黒いスリット）
+  ctx.fillStyle='#000';
+  ctx.fillRect(-9, -6, 6, 10);
+  ctx.fillRect( 3, -6, 6, 10);
+  // 奥に赤い光
+  ctx.fillStyle='#dc2626';
+  ctx.fillRect(-7, -2, 2, 3);
+  ctx.fillRect( 5, -2, 2, 3);
+  // 裂けた口
+  ctx.strokeStyle='#000'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.moveTo(-10, 8);
+  ctx.quadraticCurveTo(0, 16 + Math.sin(G.t*3+e.id)*3, 10, 8);
+  ctx.stroke();
+  // たらり
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(-3, 14, 2, 0, Math.PI*2); ctx.fill();
+} else if(e.type===2){ // 這い寄るもの
+      ctx.shadowColor='#7c3aed'; ctx.shadowBlur=18;
+      ctx.fillStyle='rgba(124,58,237,0.7)';
+      for(let i=0;i<6;i++){
+        const a=i/6*Math.PI*2+G.t*2;
+        const r=TILE*0.35+Math.sin(G.t*5+i)*4;
+        ctx.beginPath();
+        ctx.arc(Math.cos(a)*r*0.5,Math.sin(a)*r*0.5,TILE*0.22,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.fillStyle='#c4b5fd'; ctx.beginPath();
+      ctx.arc(0,0,TILE*0.2,0,Math.PI*2); ctx.fill();
+    } else if(e.type===3){ // 荒ぶるもの
+      ctx.shadowColor='#f59e0b'; ctx.shadowBlur= e.phase===1 ? 25 : 10;
+      ctx.fillStyle = e.phase===1 ? '#fbbf24' : '#92400e';
+      ctx.fillRect(-TILE*0.35,-TILE*0.35,TILE*0.7,TILE*0.7);
+      ctx.strokeStyle='#000'; ctx.lineWidth=2;
+      ctx.strokeRect(-TILE*0.35,-TILE*0.35,TILE*0.7,TILE*0.7);
+      ctx.fillStyle='#000'; ctx.fillRect(-8,-5,5,5); ctx.fillRect(3,-5,5,5);
+      if(e.phase===0){ // 溜め演出
+        ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(0,0,TILE*0.5+Math.sin(G.t*15)*3,0,Math.PI*2); ctx.stroke();
+      }
+    } else if(e.type===4){ // 黒いもの
+      const dx=p.x-e.x, dy=p.y-e.y, L=Math.hypot(dx,dy)||1;
+      const face = (dx/L)*p.face.x + (dy/L)*p.face.y;
+      const fast = face<-0.3;
+      ctx.shadowColor= fast ? '#dc2626' : '#111827'; ctx.shadowBlur= fast ? 25 : 12;
+      ctx.fillStyle='#0a0a0a'; ctx.beginPath();
+      ctx.moveTo(0,-TILE*0.5);
+      ctx.lineTo(TILE*0.45,TILE*0.4);
+      ctx.lineTo(TILE*0.15,TILE*0.3);
+      ctx.lineTo(0,TILE*0.5);
+      ctx.lineTo(-TILE*0.15,TILE*0.3);
+      ctx.lineTo(-TILE*0.45,TILE*0.4);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle= fast ? '#ef4444' : '#dc2626';
+      ctx.beginPath(); ctx.arc(-6,-5,3,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(6,-5,3,0,Math.PI*2); ctx.fill();
+    } else if(e.type===5){ // 統べるもの
+  // 得体の知れない影：揺らめく黒紫の塊
+  const pulse = 1 + Math.sin(G.t*3 + e.id)*0.1;
+  ctx.shadowColor='#a855f7'; ctx.shadowBlur=22;
+  // 本体
+  ctx.fillStyle='#1e1b4b';
+  ctx.beginPath();
+  for(let i=0;i<10;i++){
+    const a = i/10*Math.PI*2;
+    const r = TILE*(0.42 + Math.sin(G.t*2.5 + i + e.id)*0.06)*pulse;
+    const x = Math.cos(a)*r, y = Math.sin(a)*r + 3;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath(); ctx.fill();
+  // 黄金の目
+  ctx.fillStyle='#facc15';
+  ctx.beginPath(); ctx.arc(-7, -3, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(7, -3, 3.5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(-7, -3, 1.5, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(7, -3, 1.5, 0, Math.PI*2); ctx.fill();
+
+  // 伸びる手
+  if(e.armLen>0){
+    ctx.strokeStyle='#a855f7'; ctx.lineWidth=7; ctx.lineCap='round';
+    ctx.shadowColor='#c084fc'; ctx.shadowBlur=18;
+    ctx.beginPath();
+    const ex = Math.cos(e.armAng)*e.armLen, ey = Math.sin(e.armAng)*e.armLen;
+    // 少しうねらせる
+    const mx = ex*0.5 + Math.cos(e.armAng+Math.PI/2)*Math.sin(G.t*12+e.id)*8;
+    const my = ey*0.5 + Math.sin(e.armAng+Math.PI/2)*Math.sin(G.t*12+e.id)*8;
+    ctx.moveTo(0,0);
+    ctx.quadraticCurveTo(mx,my,ex,ey);
+    ctx.stroke();
+    // 手の先端
+    ctx.fillStyle='#e9d5ff';
+    ctx.beginPath(); ctx.arc(ex,ey,9,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#7c3aed';
+    ctx.beginPath(); ctx.arc(ex,ey,5,0,Math.PI*2); ctx.fill();
+  }
+}
+    if(stun){
+      ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.arc(0,0,TILE*0.55,0,Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+  }
+
+  // プレイヤー
+  ctx.save(); ctx.translate(p.x,p.y);
+  if(p.hide) ctx.globalAlpha=0.25;
+  // 体
+  ctx.fillStyle='#2563eb'; ctx.beginPath();
+  ctx.arc(0,0,TILE*0.32,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#1e3a8a'; ctx.lineWidth=2; ctx.stroke();
+  // 顔
+  ctx.fillStyle='#fff';
+  const fx=p.face.x*5, fy=p.face.y*5;
+  ctx.beginPath(); ctx.arc(fx-4,fy-2,3,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fx+4,fy-2,3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000';
+  ctx.beginPath(); ctx.arc(fx-4+p.face.x,fy-2+p.face.y,1.5,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(fx+4+p.face.x,fy-2+p.face.y,1.5,0,Math.PI*2); ctx.fill();
+  // ダッシュ演出
+  if(KEY.ShiftLeft||KEY.ShiftRight){
+    ctx.strokeStyle='rgba(96,165,250,0.5)'; ctx.lineWidth=2;
+    for(let i=1;i<=3;i++){
+      ctx.beginPath();
+      ctx.arc(-p.face.x*i*6,-p.face.y*i*6,TILE*(0.32-i*0.07),0,Math.PI*2);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  ctx.restore();
+
+  // 暗闇とライト
+  const lightR = D.vis * (p.inv.includes('懐中電灯') ? 1.6 : 1);
+  const grad = ctx.createRadialGradient(W/2,H/2,lightR*0.2,W/2,H/2,lightR);
+  grad.addColorStop(0,'rgba(0,0,0,0)');
+  grad.addColorStop(0.6,'rgba(0,0,0,0.55)');
+  grad.addColorStop(1,'rgba(0,0,0,0.92)');
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+
+  // ラジオのノイズ演出
+  if(p.inv.includes('ラジオ') && G.radioNear && Math.random()<0.3){
+    ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.08})`;
+    for(let i=0;i<30;i++){
+      ctx.fillRect(Math.random()*W,Math.random()*H,2,2);
+    }
+  }
+
+  // ダメージフラッシュ
+  if(p.sm < 30){
+    ctx.fillStyle=`rgba(220,38,38,${(1-p.sm/30)*0.25})`;
+    ctx.fillRect(0,0,W,H);
+  }
+
+  renderMini();
+}
+
+// ========== ミニマップ ==========
+function renderMini(){
+  const m=$('mini'), mc=m.getContext('2d');
+  const sx=m.width/MW, sy=m.height/MH;
+  mc.fillStyle='#000'; mc.fillRect(0,0,m.width,m.height);
+  // タイル
+  for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+    const t=G.map[y][x];
+    if(t===1) mc.fillStyle='#166534';
+    else if(t===2) mc.fillStyle='#78350f';
+    else if(t===3||t===4) mc.fillStyle='#fbbf24';
+    else if(t===5) mc.fillStyle=G.gate.open?'#22c55e':'#6b7280';
+    else continue;
+    mc.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));
+  }
+  // 鍵
+  if(G.memos){
+    mc.fillStyle='#fde047';
+    for(const k of G.keys) if(!k.got){
+      mc.fillRect(k.x*sx-1,k.y*sy-1,3,3);
+    }
+  } else {
+    for(const k of G.keys) if(!k.got && k.inHut){
+      const h=G.huts.find(h=>k.x>=h.x&&k.x<h.x+h.w&&k.y>=h.y&&k.y<h.y+h.h);
+      if(!h?.entered) continue;
+      mc.fillStyle='#fde047';
+      mc.fillRect(k.x*sx-1,k.y*sy-1,2,2);
+    }
+  }
+  // 敵
+  mc.fillStyle='#dc2626';
+  for(const e of G.enemies){
+    mc.fillRect(e.x/TILE*sx-1,e.y/TILE*sy-1,3,3);
+  }
+  // プレイヤー
+  mc.fillStyle='#3b82f6';
+  const px=G.player.x/TILE*sx, py=G.player.y/TILE*sy;
+  mc.beginPath(); mc.arc(px,py,3,0,Math.PI*2); mc.fill();
+  // 方向
+  mc.strokeStyle='#93c5fd'; mc.lineWidth=1.5;
+  mc.beginPath();
+  mc.moveTo(px,py);
+  mc.lineTo(px+G.player.face.x*7,py+G.player.face.y*7);
+  mc.stroke();
+}
+
+// ========== 全体マップ ==========
+function openMap(){
+  if(!G.map || G.map.length === 0){
+    msg('ゲームを開始してからお試しください', 1800);
+    return;
+  }
+  // 最優先：hiddenクラスを強制削除（これが無いと表示されない）
+  const modal = $('mapModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('show');
+  // キャンバスの実サイズをCSSサイズに合わせて再設定（ぼやけ・サイズズレ防止）
+  const m = $('bigMap');
+  const wrap = m.parentElement;
+  m.width = wrap.clientWidth;
+  m.height = wrap.clientHeight;
+  requestAnimationFrame(() => drawBigMap());
+}
+function closeMap(){ $('mapModal').classList.remove('show'); }
+function drawBigMap(){
+  const m=$('bigMap'), c=m.getContext('2d');
+  const sx=m.width/MW, sy=m.height/MH;
+  c.fillStyle='#05070a'; c.fillRect(0,0,m.width,m.height);
+  // タイル
+  for(let y=0;y<MH;y++) for(let x=0;x<MW;x++){
+    const t=G.map[y][x];
+    if(t===1) c.fillStyle='#14532d';
+    else if(t===2) c.fillStyle='#7c2d12';
+    else if(t===3) c.fillStyle='#fbbf24';
+    else if(t===4) c.fillStyle='#065f46';
+    else if(t===5) c.fillStyle=G.gate.open?'#16a34a':'#4b5563';
+    else continue;
+    c.fillRect(x*sx,y*sy,Math.ceil(sx),Math.ceil(sy));
+  }
+  // 小屋名
+  c.fillStyle='#fcd34d'; c.font='bold 12px "Noto Sans JP"'; c.textAlign='center';
+  for(const h of G.huts){
+    c.fillText(h.n,(h.x+h.w/2)*sx,(h.y-0.5)*sy);
+  }
+  // 茂み
+  c.fillStyle='#15803d';
+  for(const b of G.bushes){
+    c.beginPath(); c.arc(b.x*sx+sx/2,b.y*sy+sy/2,2,0,Math.PI*2); c.fill();
+  }
+  // 調査可能ポイント（鍵・アイテム）
+  for(const k of G.keys) if(!k.got){
+    c.fillStyle= G.memos ? '#fde047' : (k.inHut ? '#a7f3d0' : '#7dd3fc');
+    c.fillRect(k.x*sx-2,k.y*sy-2,4,4);
+  }
+  for(const it of G.items) if(!it.got){
+    c.fillStyle='#c4b5fd';
+    c.fillRect(it.x*sx-1.5,it.y*sy-1.5,3,3);
+  }
+  // 敵
+  c.fillStyle='#ef4444';
+  for(const e of G.enemies){
+    c.beginPath(); c.arc(e.x/TILE*sx,e.y/TILE*sy,4,0,Math.PI*2); c.fill();
+  }
+  // プレイヤー
+  c.fillStyle='#2563eb';
+  const px=G.player.x/TILE*sx, py=G.player.y/TILE*sy;
+  c.beginPath(); c.arc(px,py,5,0,Math.PI*2); c.fill();
+  c.strokeStyle='#93c5fd'; c.lineWidth=2;
+  c.beginPath();
+  c.moveTo(px,py); c.lineTo(px+G.player.face.x*12,py+G.player.face.y*12);
+  c.stroke();
+
+  // ホバーチップ
+  const tip=$('tip');
+  m.onmousemove = ev=>{
+    const rect=m.getBoundingClientRect();
+    const mx=(ev.clientX-rect.left)*(m.width/rect.width);
+    const my=(ev.clientY-rect.top)*(m.height/rect.height);
+    const tx=Math.floor(mx/sx), ty=Math.floor(my/sy);
+    let txt=null;
+    const k=G.keys.find(k=>!k.got && k.x===tx && k.y===ty);
+    if(k) txt=`🔑 鍵 #${k.id}`;
+    const it=G.items.find(i=>!i.got && i.x===tx && i.y===ty);
+    if(it) txt=`${it.icon} ${it.name}`;
+    const h=G.huts.find(h=>tx>=h.x&&tx<h.x+h.w&&ty>=h.y&&ty<h.y+h.h);
+    if(h) txt=`🏚 ${h.n}${h.entered?'（探索済）':'（未探索）'}`;
+    const dr=G.doors.find(d=>d.x===tx&&d.y===ty);
+    if(dr) txt=`🚪 ドア：${dr.open?'開':'閉'}`;
+    if(tx===G.gate.x||tx===G.gate.x+1){ if(ty===G.gate.y) txt=`🚪 出口ゲート：${G.gate.open?'開！':'要'+DIFF[G.diff].keys+'鍵'}`; }
+    if(txt){
+      tip.style.display='block';
+      tip.style.left=(ev.clientX-rect.left+12)+'px';
+      tip.style.top=(ev.clientY-rect.top+12)+'px';
+      tip.textContent=txt;
+    } else tip.style.display='none';
+  };
+  m.onmouseleave = ()=>tip.style.display='none';
+}
+
+// ========== UI更新 ==========
+function updateUI(){
+  const p=G.player; const D=DIFF[G.diff];
+  // スタミナ
+  const sb=$('stBar');
+  sb.style.width=(p.stm/p.stmMax*100)+'%';
+  sb.className='';
+  if(p.stm<25) sb.classList.add('cri');
+  else if(p.stm<50) sb.classList.add('low');
+  // 精神値
+  const smb=$('smBar');
+  smb.style.width=(p.sm/p.smMax*100)+'%';
+  if(p.sm<30) smb.style.background='linear-gradient(90deg,#ef4444,#f87171)';
+  else if(p.sm<60) smb.style.background='linear-gradient(90deg,#f59e0b,#fbbf24)';
+  else smb.style.background='linear-gradient(90deg,#60a5fa,#93c5fd)';
+  // 時間
+  $('time').textContent=fmtTime(G.t);
+  // 安全レベル
+  const es=$('es');
+  let near=null, bd=1e9;
+  for(const e of G.enemies){ const d=dist2(e.x,e.y,p.x,p.y); if(d<bd){bd=d; near=e;} }
+  const thr = TILE*8;
+  if(p.hide){ es.textContent='🌿 隠れ中'; es.className='text-green-300 text-xs font-bold mt-0.5'; }
+  else if(!near || bd>thr*thr){ es.textContent='✅ 安全'; es.className='text-green-300 text-xs font-bold mt-0.5'; }
+  else if(bd>(thr*0.6)*(thr*0.6)){ es.textContent='⚠️ 気配'; es.className='text-yellow-300 text-xs font-bold mt-0.5'; }
+  else { es.textContent=`👁 ${ENEMY_NAMES[near.type]} 接近！`; es.className='text-red-400 text-xs font-bold mt-0.5 chase'; }
+}
+function updateKC(){
+  const D=DIFF[G.diff];
+  $('kc').textContent=`🔑 鍵: ${G.player.keys}/${D.keys}`;
+  $('diff').textContent=`難易度: ${D.name}`;
+}
+function fmtTime(t){
+  const s=Math.floor(t);
+  const m=Math.floor(s/60), r=s%60;
+  return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');
+}
+
+// ========== ゲーム開始 / メインループ ==========
+function startGame(){
+  if(!G.diff || !DIFF[G.diff]){
+    msg('先に難易度を選択してください', 2000);
+    SFX.click();
+    return;
+  }
+  for(const k in KEY) KEY[k] = false;
+  G.last = performance.now();
+  initAudio(); resumeAudio(); SFX.click();
+  // 状態リセット
+  G.running=true; G.gameover=false; G.cleared=false; G.t=0; G.startTime=performance.now(); G.last=G.startTime;
+  G.area=-1; G.memos=false; G.memoT=0; G.encount=false;
+  G.player={x:0,y:0,dir:0,spd:2.2,stm:100,stmMax:100,sm:100,smMax:100,hide:false,hideT:0,
+    boost:0,photo:0,keys:0,inv:[],invMax:4,stunT:0,stuck:false,face:{x:0,y:-1},_cdPhoto:0};
+  G.enemies=[];
+  makeMap();
+  fitCanvas();
+  drawItems();
+  updateKC();
+  show('ui');
+  SFX.chase(false);
+  msg(`森に足を踏み入れた……　鍵を ${DIFF[G.diff].keys} 個集めて北端のゲートから脱出せよ`, 3500);
+  requestAnimationFrame(loop);
+}
+function loop(now){
+  if(!G.running) return;
+  const dt = Math.min(0.05,(now-G.last)/1000);
+  G.last=now; G.t+=dt;
+  if(G.memoT>0){ G.memoT-=60*dt; if(G.memoT<=0) G.memos=false; }
+  updatePlayer(dt);
+  if(!G.gameover && !G.cleared) updateEnemies(dt);
+  render();
+  updateUI();
+  requestAnimationFrame(loop);
+}
+
+// 初期化
+fitCanvas();
+</script>
+</body>
+</html>
